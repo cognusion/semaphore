@@ -1,5 +1,3 @@
-package semaphore
-
 /*
 package main
 
@@ -42,6 +40,8 @@ func main() {
 	fmt.Printf("Free locks now? %d\n",S.Free())
 }
 */
+
+package semaphore
 
 type Semaphore struct {
 	lock chan bool
