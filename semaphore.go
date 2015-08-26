@@ -40,7 +40,6 @@ func main() {
 	fmt.Printf("Free locks now? %d\n",S.Free())
 }
 */
-
 package semaphore
 
 type Semaphore struct {
