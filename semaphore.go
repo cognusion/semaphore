@@ -1,6 +1,10 @@
 /*
-	package main
-	
+Super simple goro-safe semaphore struct for Go. 
+* NewSemaphore(N) to create a semaphore of size N
+* Lock() to consume
+* Unlock() to replace
+* Free() to see how many locks are available
+
 	import (
 		"github.com/cognusion/semaphore"
 		"time"
