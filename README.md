@@ -33,13 +33,13 @@ go func() {
 
 go func() {
 	// Call lock, which will block if there aren't free locks
-        // and defer the unlock until the function ends
-        S.Lock()
+	// and defer the unlock until the function ends
+	S.Lock()
 	defer S.Unlock()
 
-        // Do some other stuff
-        fmt.Println("Doing some other stuff")
-        time.Sleep(50 * time.Millisecond)
+	// Do some other stuff
+	fmt.Println("Doing some other stuff")
+	time.Sleep(50 * time.Millisecond)
 }()
 
 time.Sleep(3 * time.Second)
