@@ -1,8 +1,10 @@
 /*
-Super simple goro-safe semaphore struct for Go. 
+Super simple goro-safe semaphore struct for Go.
 * NewSemaphore(N) to create a semaphore of size N
 * Lock() to consume
 * Unlock() to replace
+* Add(i) to add i to the lock count
+* Sub(i) to subtract i to the lock count
 * Free() to see how many locks are available
 
 	import (
@@ -10,34 +12,34 @@ Super simple goro-safe semaphore struct for Go.
 		"time"
 		"fmt"
 	)
-	
+
 	func main() {
 		// Make a new semaphore, with the number of
 		// simultaneous locks you want to allow
 		S := NewSemaphore(1)
-		
+
 		go func() {
 			// Call lock, which will block if there aren't free locks
 			// and defer the unlock until the function ends
 			S.Lock()
 			defer S.Unlock()
-		
+
 			// Do some stuff
 			fmt.Println("Doing some stuff")
 			time.Sleep(1 * time.Second)
 		}()
-		
+
 		go func() {
 			// Call lock, which will block if there aren't free locks
 			// and defer the unlock until the function ends
 			S.Lock()
 			defer S.Unlock()
-		
+
 			// Do some other stuff
 			fmt.Println("Doing some other stuff")
 			time.Sleep(50 * time.Millisecond)
 		}()
-		
+
 		time.Sleep(1 * time.Millisecond)
 		fmt.Printf("Free locks? %d\n",S.Free())
 		time.Sleep(3 * time.Second)
@@ -65,6 +67,20 @@ func (s *Semaphore) Lock() {
 // Replace a lock in the semaphore, blocking if no locks are consumed
 func (s *Semaphore) Unlock() {
 	<-s.lock
+}
+
+// Consume numLocks locks in the semaphore, blocking if none is available
+func (s *Semaphore) Add(numLocks int) {
+	for i := 0; i < numLocks; i++ {
+		s.lock <- true
+	}
+}
+
+// Replace numLocks locks in the semaphore, blocking if no locks are consumed
+func (s *Semaphore) Sub(numLocks int) {
+	for i := 0; i < numLocks; i++ {
+		<-s.lock
+	}
 }
 
 // Return the number of available locks in the semaphore

@@ -31,6 +31,103 @@ func TestSemaphore_Lock(t *testing.T) {
 	}
 }
 
+func TestSemaphore_Add(t *testing.T) {
+
+	timeout := make(chan bool, 1)
+	c := make(chan string, 4)
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		timeout <- true
+	}()
+
+	S := NewSemaphore(4)
+
+	go func() {
+		before := S.Free()
+		if before != 4 {
+			t.Errorf("Before Add() Free should have been 4, but was %d\n", before)
+		}
+
+		S.Add(4)
+
+		after := S.Free()
+		if after != 0 {
+			t.Errorf("After Add() Free should have been 0, but was %d\n", after)
+		}
+
+		c <- "Lock succeded"
+	}()
+
+	select {
+	case <-c:
+		// Good
+		return
+	case <-timeout:
+		t.Error("Lock timed out")
+	}
+}
+
+func TestSemaphore_AddSub(t *testing.T) {
+
+	timeout := make(chan bool, 1)
+	c := make(chan string, 4)
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		timeout <- true
+	}()
+
+	S := NewSemaphore(4)
+
+	go func() {
+		before := S.Free()
+		if before != 4 {
+			t.Errorf("Before Add() Free should have been 4, but was %d\n", before)
+		}
+
+		S.Add(4)
+
+		after := S.Free()
+		if after != 0 {
+			t.Errorf("After Add() Free should have been 0, but was %d\n", after)
+		}
+
+		c <- "Lock succeded"
+	}()
+
+	select {
+	case <-c:
+		// Good
+	case <-timeout:
+		t.Error("Lock timed out")
+	}
+
+	go func() {
+		before := S.Free()
+		if before != 0 {
+			t.Errorf("Before Sub() Free should have been 0, but was %d\n", before)
+		}
+
+		S.Sub(4)
+
+		after := S.Free()
+		if after != 4 {
+			t.Errorf("After Sub() Free should have been 4, but was %d\n", after)
+		}
+
+		c <- "Unlock succeded"
+	}()
+
+	select {
+	case <-c:
+		// Good
+		return
+	case <-timeout:
+		t.Error("Lock timed out")
+	}
+}
+
 func TestSemaphore_LockUnlock(t *testing.T) {
 
 	timeout := make(chan bool, 1)

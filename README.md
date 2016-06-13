@@ -10,7 +10,7 @@ Basics
 go get github.com/cognusion/semaphore
 ```
 
-Super simple: NewSemaphore(N) to create a semaphore of size N, Lock() to consume, Unlock() to replace, Free() to see how many locks are available.
+Super simple: NewSemaphore(N) to create a semaphore of size N, Lock() to consume, Unlock() to replace, Free() to see how many locks are available. Additionally you can Add(i) and Sub(i) locks.
 
 ```go
 package main
