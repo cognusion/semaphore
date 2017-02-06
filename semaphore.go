@@ -48,6 +48,8 @@ Super simple goro-safe semaphore struct for Go.
 */
 package semaphore
 
+import "fmt"
+
 type Semaphore struct {
 	lock chan bool
 }
@@ -86,4 +88,9 @@ func (s *Semaphore) Sub(numLocks int) {
 // Return the number of available locks in the semaphore
 func (s *Semaphore) Free() int {
 	return cap(s.lock) - len(s.lock)
+}
+
+// Return the string representation of the semaphore
+func (s *Semaphore) String() string {
+	return fmt.Sprintf("%d of %d free", s.Free(), cap(s.lock))
 }

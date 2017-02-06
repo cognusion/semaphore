@@ -24,7 +24,7 @@ import (
 func main() {
 	// Make a new semaphore, with the number of
 	// simultaneous locks you want to allow
-	S := NewSemaphore(1)
+	S := semaphore.NewSemaphore(1)
 	
 	go func() {
 		// Call lock, which will block if there aren't free locks
