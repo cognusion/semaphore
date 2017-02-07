@@ -19,7 +19,7 @@ func TestSemaphore_Lock(t *testing.T) {
 
 	go func() {
 		S.Lock()
-		c <- "Lock succeded"
+		c <- "Lock succeeded"
 	}()
 
 	select {
@@ -56,7 +56,7 @@ func TestSemaphore_Add(t *testing.T) {
 			t.Errorf("After Add() Free should have been 0, but was %d\n", after)
 		}
 
-		c <- "Lock succeded"
+		c <- "Lock succeeded"
 	}()
 
 	select {
@@ -93,7 +93,7 @@ func TestSemaphore_AddSub(t *testing.T) {
 			t.Errorf("After Add() Free should have been 0, but was %d\n", after)
 		}
 
-		c <- "Lock succeded"
+		c <- "Lock succeeded"
 	}()
 
 	select {
@@ -116,7 +116,7 @@ func TestSemaphore_AddSub(t *testing.T) {
 			t.Errorf("After Sub() Free should have been 4, but was %d\n", after)
 		}
 
-		c <- "Unlock succeded"
+		c <- "Unlock succeeded"
 	}()
 
 	select {
@@ -143,7 +143,7 @@ func TestSemaphore_LockUnlock(t *testing.T) {
 
 	go func() {
 		S.Unlock()
-		c <- "Unlock succeded"
+		c <- "Unlock succeeded"
 	}()
 
 	select {
@@ -170,7 +170,7 @@ func TestSemaphore_Blocking(t *testing.T) {
 
 	go func() {
 		S.Lock()
-		c <- "Lock succeded"
+		c <- "Lock succeeded"
 	}()
 
 	select {
@@ -203,7 +203,7 @@ func TestSemaphore_BlockingUnlock(t *testing.T) {
 
 	go func() {
 		S.Lock()
-		c <- "Lock succeded"
+		c <- "Lock succeeded"
 	}()
 
 	select {
@@ -229,7 +229,7 @@ func TestSemaphore_BadUnlock(t *testing.T) {
 
 	go func() {
 		S.Unlock()
-		c <- "Unock succeded"
+		c <- "Unock succeeded"
 	}()
 
 	select {

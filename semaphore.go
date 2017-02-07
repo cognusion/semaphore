@@ -1,5 +1,5 @@
 /*
-Super simple goro-safe semaphore struct for Go.
+Package semaphore is a super simple goro-safe semaphore struct for Go.
 * NewSemaphore(N) to create a semaphore of size N
 * Lock() to consume
 * Unlock() to replace
@@ -50,47 +50,48 @@ package semaphore
 
 import "fmt"
 
+// Semaphore is a goro-safe simple semaphore
 type Semaphore struct {
 	lock chan bool
 }
 
-// Returns a Semaphore allowing up to 'size' locks before blocking
+// NewSemaphore returns a Semaphore allowing up to 'size' locks before blocking
 func NewSemaphore(size int) Semaphore {
 	var S Semaphore
 	S.lock = make(chan bool, size)
 	return S
 }
 
-// Consume a lock in the semaphore, blocking if none is available
+// Lock consumes a lock in the semaphore, blocking if none is available
 func (s *Semaphore) Lock() {
 	s.lock <- true
 }
 
-// Replace a lock in the semaphore, blocking if no locks are consumed
+// Unlock replaces a lock in the semaphore, blocking if no locks are consumed
 func (s *Semaphore) Unlock() {
 	<-s.lock
 }
 
-// Consume numLocks locks in the semaphore, blocking if none is available
+// Add consumes numLocks locks in the semaphore, blocking if none is available
 func (s *Semaphore) Add(numLocks int) {
 	for i := 0; i < numLocks; i++ {
 		s.lock <- true
 	}
 }
 
-// Replace numLocks locks in the semaphore, blocking if no locks are consumed
+// Sub replaces numLocks locks in the semaphore, blocking if no locks are consumed
 func (s *Semaphore) Sub(numLocks int) {
 	for i := 0; i < numLocks; i++ {
 		<-s.lock
 	}
 }
 
-// Return the number of available locks in the semaphore
+// Free returns the number of available locks in the semaphore
 func (s *Semaphore) Free() int {
 	return cap(s.lock) - len(s.lock)
 }
 
-// Return the string representation of the semaphore
+// String returns the string representation of the semaphore
 func (s *Semaphore) String() string {
 	return fmt.Sprintf("%d of %d free", s.Free(), cap(s.lock))
 }
