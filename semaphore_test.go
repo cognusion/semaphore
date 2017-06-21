@@ -280,3 +280,24 @@ func TestSemaphore_Free(t *testing.T) {
 	}
 
 }
+
+func BenchmarkSemaphore1k(b *testing.B) {
+	ssize := 1000
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		S := NewSemaphore(ssize)
+		go func() {
+			for i := 0; i < ssize; i++ {
+				S.Lock()
+				defer S.Unlock()
+			}
+		}()
+		for {
+			// WTF?
+			if S.Free() == ssize {
+				break
+			}
+		}
+	}
+}

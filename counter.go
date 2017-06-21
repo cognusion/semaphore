@@ -2,22 +2,22 @@ package semaphore
 
 // Counter is a Semaphore-locked integer
 type Counter struct {
-	lock    Semaphore
+	Semaphore
 	counter int
 }
 
 // Inc[rements] the counter
 func (c *Counter) Inc() {
-	c.lock.Lock()
+	c.Lock()
 	c.counter++
-	c.lock.Unlock()
+	c.Unlock()
 }
 
 // Dec[rements] the counter
 func (c *Counter) Dec() {
-	c.lock.Lock()
+	c.Lock()
 	c.counter--
-	c.lock.Unlock()
+	c.Unlock()
 }
 
 // Value returns the current counter value
@@ -33,8 +33,8 @@ func NewCounter() Counter {
 // NewSetCounter returns a new Counter with the specified value
 func NewSetCounter(value int) Counter {
 	c := Counter{
-		lock:    NewSemaphore(1),
-		counter: value,
+		Semaphore: NewSemaphore(1),
+		counter:   value,
 	}
 	return c
 }
