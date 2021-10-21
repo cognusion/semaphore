@@ -57,9 +57,9 @@ type Semaphore struct {
 
 // NewSemaphore returns a Semaphore allowing up to 'size' locks before blocking
 func NewSemaphore(size int) Semaphore {
-	var S Semaphore
-	S.lock = make(chan bool, size)
-	return S
+	return Semaphore{
+		lock: make(chan bool, size),
+	}
 }
 
 // Lock consumes a lock in the semaphore, blocking if none is available

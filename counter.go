@@ -6,14 +6,14 @@ type Counter struct {
 	counter int
 }
 
-// Inc[rements] the counter
+// Inc [rements] the counter
 func (c *Counter) Inc() {
 	c.Lock()
 	c.counter++
 	c.Unlock()
 }
 
-// Dec[rements] the counter
+// Dec [rements] the counter
 func (c *Counter) Dec() {
 	c.Lock()
 	c.counter--
@@ -32,9 +32,8 @@ func NewCounter() Counter {
 
 // NewSetCounter returns a new Counter with the specified value
 func NewSetCounter(value int) Counter {
-	c := Counter{
+	return Counter{
 		Semaphore: NewSemaphore(1),
 		counter:   value,
 	}
-	return c
 }
