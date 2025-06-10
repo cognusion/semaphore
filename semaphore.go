@@ -6,6 +6,7 @@ Package semaphore is a super simple goro-safe semaphore struct for Go.
 * Add(i) to add i to the lock count
 * Sub(i) to subtract i to the lock count
 * Free() to see how many locks are available
+* <-Until() to wait until a channel get a message to consume.
 
 	import (
 		"github.com/cognusion/semaphore"
@@ -60,6 +61,16 @@ func NewSemaphore(size int) Semaphore {
 	return Semaphore{
 		lock: make(chan bool, size),
 	}
+}
+
+// Until returns a channel that fires bool(true) when the lock can be consumed.
+func (s *Semaphore) Until() <-chan bool {
+	b := make(chan bool, 1)
+	go func(b chan bool) {
+		s.lock <- true
+		b <- true
+	}(b)
+	return b
 }
 
 // Lock consumes a lock in the semaphore, blocking if none is available

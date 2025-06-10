@@ -3,9 +3,12 @@ package semaphore
 import (
 	"testing"
 	"time"
+
+	"github.com/fortytw2/leaktest"
 )
 
 func TestSemaphore_Lock(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	timeout := make(chan bool, 1)
 	c := make(chan string, 1)
@@ -32,6 +35,7 @@ func TestSemaphore_Lock(t *testing.T) {
 }
 
 func TestSemaphore_Add(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	timeout := make(chan bool, 1)
 	c := make(chan string, 4)
@@ -69,6 +73,7 @@ func TestSemaphore_Add(t *testing.T) {
 }
 
 func TestSemaphore_AddSub(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	timeout := make(chan bool, 1)
 	c := make(chan string, 4)
@@ -129,6 +134,7 @@ func TestSemaphore_AddSub(t *testing.T) {
 }
 
 func TestSemaphore_LockUnlock(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	timeout := make(chan bool, 1)
 	c := make(chan string, 1)
@@ -155,7 +161,29 @@ func TestSemaphore_LockUnlock(t *testing.T) {
 	}
 }
 
+func TestSemaphore_UntilLockUnlock(t *testing.T) {
+	defer leaktest.Check(t)()
+
+	S := NewSemaphore(1)
+	S.Lock()
+
+	go func() {
+		<-time.After(100 * time.Millisecond)
+		S.Unlock()
+	}()
+
+	select {
+	case <-S.Until():
+		// Good
+		return
+	case <-time.After(1 * time.Second):
+		// Timeout, bad!
+		t.Error("Lock timed out")
+	}
+}
+
 func TestSemaphore_Blocking(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	timeout := make(chan bool, 1)
 	c := make(chan string, 1)
@@ -179,11 +207,13 @@ func TestSemaphore_Blocking(t *testing.T) {
 		t.Errorf("Lock didn't hold! '%s'\n", r)
 	case <-timeout:
 		// Timed out, as it should
+		defer S.Unlock()
 		return
 	}
 }
 
 func TestSemaphore_BlockingUnlock(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	timeout := make(chan bool, 1)
 	c := make(chan string, 1)
@@ -216,33 +246,30 @@ func TestSemaphore_BlockingUnlock(t *testing.T) {
 }
 
 func TestSemaphore_BadUnlock(t *testing.T) {
+	defer leaktest.Check(t)()
 
-	timeout := make(chan bool, 1)
 	c := make(chan string, 1)
-
-	go func() {
-		time.Sleep(100 * time.Millisecond)
-		timeout <- true
-	}()
 
 	S := NewSemaphore(1)
 
 	go func() {
 		S.Unlock()
-		c <- "Unock succeeded"
+		c <- "Unlock succeeded"
 	}()
 
 	select {
 	case <-c:
 		// Booo
 		t.Error("Unlock didn't hold!")
-	case <-timeout:
+	case <-time.After(100 * time.Millisecond):
 		// Good
+		defer S.Lock() // haha
 		return
 	}
 }
 
 func TestSemaphore_Free(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	S := NewSemaphore(10)
 
