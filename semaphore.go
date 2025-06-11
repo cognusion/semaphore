@@ -1,58 +1,15 @@
-/*
-Package semaphore is a super simple goro-safe semaphore struct for Go.
-* NewSemaphore(N) to create a semaphore of size N
-* Lock() to consume
-* Unlock() to replace
-* Add(i) to add i to the lock count
-* Sub(i) to subtract i to the lock count
-* Free() to see how many locks are available
-* <-Until() to wait until a channel get a message to consume.
-
-	import (
-		"github.com/cognusion/semaphore"
-		"time"
-		"fmt"
-	)
-
-	func main() {
-		// Make a new semaphore, with the number of
-		// simultaneous locks you want to allow
-		S := NewSemaphore(1)
-
-		go func() {
-			// Call lock, which will block if there aren't free locks
-			// and defer the unlock until the function ends
-			S.Lock()
-			defer S.Unlock()
-
-			// Do some stuff
-			fmt.Println("Doing some stuff")
-			time.Sleep(1 * time.Second)
-		}()
-
-		go func() {
-			// Call lock, which will block if there aren't free locks
-			// and defer the unlock until the function ends
-			S.Lock()
-			defer S.Unlock()
-
-			// Do some other stuff
-			fmt.Println("Doing some other stuff")
-			time.Sleep(50 * time.Millisecond)
-		}()
-
-		time.Sleep(1 * time.Millisecond)
-		fmt.Printf("Free locks? %d\n",S.Free())
-		time.Sleep(3 * time.Second)
-		fmt.Printf("Free locks now? %d\n",S.Free())
-	}
-*/
+// Package semaphore is a super simple goro-safe semaphore struct for Go.
 package semaphore
 
 import (
 	"fmt"
 	"time"
 )
+
+// UntilFreeTimeout is a Duration for the goro spawned by the Until func to wait
+// if there is nothing consuming messages from provided chan, before releasing
+// the lock.
+const UntilFreeTimeout = 2 * time.Millisecond
 
 // Semaphore is a goro-safe simple semaphore
 type Semaphore struct {
@@ -67,11 +24,22 @@ func NewSemaphore(size int) Semaphore {
 }
 
 // Until returns a channel that fires bool(true) when the lock can be consumed.
+// If nothing is listening to the returned channel, after 2ms (UntilFreeTimeout)
+// the lock will be removed, so if you're not paying attention, don't use this function.
 func (s *Semaphore) Until() <-chan bool {
-	b := make(chan bool, 1)
+	b := make(chan bool)
 	go func(b chan bool) {
 		s.lock <- true
-		b <- true
+		// We have a lock, let's make sure we should keep it
+		select {
+		case b <- true:
+			// The other side received, assume it's valid.
+			return
+		case <-time.After(UntilFreeTimeout):
+			// The other side did not receive, assume they are gone.
+			<-s.lock
+			return
+		}
 	}(b)
 	return b
 }

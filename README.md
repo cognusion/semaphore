@@ -5,61 +5,50 @@
 
 * [Overview](#pkg-overview)
 * [Index](#pkg-index)
+* [Examples](#pkg-examples)
 
 ## <a name="pkg-overview">Overview</a>
 Package semaphore is a super simple goro-safe semaphore struct for Go.
-* NewSemaphore(N) to create a semaphore of size N
-* Lock() to consume
-* Unlock() to replace
-* Add(i) to add i to the lock count
-* Sub(i) to subtract i to the lock count
-* Free() to see how many locks are available
-* <-Until() to wait until a channel get a message to consume.
 
 
-	import (
-		"github.com/cognusion/semaphore"
-		"time"
-		"fmt"
-	)
-	
-	func main() {
-		// Make a new semaphore, with the number of
-		// simultaneous locks you want to allow
-		S := NewSemaphore(1)
-	
-		go func() {
-			// Call lock, which will block if there aren't free locks
-			// and defer the unlock until the function ends
-			S.Lock()
-			defer S.Unlock()
-	
-			// Do some stuff
-			fmt.Println("Doing some stuff")
-			time.Sleep(1 * time.Second)
-		}()
-	
-		go func() {
-			// Call lock, which will block if there aren't free locks
-			// and defer the unlock until the function ends
-			S.Lock()
-			defer S.Unlock()
-	
-			// Do some other stuff
-			fmt.Println("Doing some other stuff")
-			time.Sleep(50 * time.Millisecond)
-		}()
-	
-		time.Sleep(1 * time.Millisecond)
-		fmt.Printf("Free locks? %d\n",S.Free())
-		time.Sleep(3 * time.Second)
-		fmt.Printf("Free locks now? %d\n",S.Free())
-	}
+##### Example :
+``` go
+// Make a new semaphore, with the number of
+// simultaneous locks you want to allow
+S := NewSemaphore(1)
 
+go func() {
+    // Call lock, which will block if there aren't free locks
+        // and defer the unlock until the function ends
+        S.Lock()
+        defer S.Unlock()
+
+        // Do some stuff
+        fmt.Println("Doing some stuff")
+        time.Sleep(1 * time.Second)
+    }()
+
+    go func() {
+        // Call lock, which will block if there aren't free locks
+    // and defer the unlock until the function ends
+    S.Lock()
+    defer S.Unlock()
+
+    // Do some other stuff
+    fmt.Println("Doing some other stuff")
+    time.Sleep(50 * time.Millisecond)
+}()
+
+time.Sleep(1 * time.Millisecond)
+fmt.Printf("Free locks? %d\n", S.Free())
+time.Sleep(3 * time.Second)
+fmt.Printf("Free locks now? %d\n", S.Free())
+```
 
 
 
 ## <a name="pkg-index">Index</a>
+* [Constants](#pkg-constants)
 * [type Counter](#Counter)
   * [func NewCounter() Counter](#NewCounter)
   * [func NewSetCounter(value int) Counter](#NewSetCounter)
@@ -81,10 +70,20 @@ Package semaphore is a super simple goro-safe semaphore struct for Go.
   * [func (s *Semaphore) Unlock()](#Semaphore.Unlock)
   * [func (s *Semaphore) Until() &lt;-chan bool](#Semaphore.Until)
 
+#### <a name="pkg-examples">Examples</a>
+* [Package](#example-)
 
 #### <a name="pkg-files">Package files</a>
 [counter.go](https://github.com/cognusion/semaphore/tree/master/counter.go) [numlock.go](https://github.com/cognusion/semaphore/tree/master/numlock.go) [semaphore.go](https://github.com/cognusion/semaphore/tree/master/semaphore.go)
 
+
+## <a name="pkg-constants">Constants</a>
+``` go
+const UntilFreeTimeout = 2 * time.Millisecond
+```
+UntilFreeTimeout is a Duration for the goro spawned by the Until func to wait
+if there is nothing consuming messages from provided chan, before releasing
+the lock.
 
 
 
@@ -195,7 +194,7 @@ Unlock unlocks the specified number
 
 
 
-## <a name="Semaphore">type</a> [Semaphore](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1316:1357#L58)
+## <a name="Semaphore">type</a> [Semaphore](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=385:426#L15)
 ``` go
 type Semaphore struct {
     // contains filtered or unexported fields
@@ -210,7 +209,7 @@ Semaphore is a goro-safe simple semaphore
 
 
 
-### <a name="NewSemaphore">func</a> [NewSemaphore](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1439:1476#L63)
+### <a name="NewSemaphore">func</a> [NewSemaphore](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=508:545#L20)
 ``` go
 func NewSemaphore(size int) Semaphore
 ```
@@ -220,7 +219,7 @@ NewSemaphore returns a Semaphore allowing up to 'size' locks before blocking
 
 
 
-### <a name="Semaphore.Add">func</a> (\*Semaphore) [Add](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=2075:2112#L90)
+### <a name="Semaphore.Add">func</a> (\*Semaphore) [Add](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1568:1605#L58)
 ``` go
 func (s *Semaphore) Add(numLocks int)
 ```
@@ -229,7 +228,7 @@ Add consumes numLocks locks in the semaphore, blocking if none is available
 
 
 
-### <a name="Semaphore.Free">func</a> (\*Semaphore) [Free](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=2407:2437#L104)
+### <a name="Semaphore.Free">func</a> (\*Semaphore) [Free](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1900:1930#L72)
 ``` go
 func (s *Semaphore) Free() int
 ```
@@ -238,7 +237,7 @@ Free returns the number of available locks in the semaphore
 
 
 
-### <a name="Semaphore.IsFree">func</a> (\*Semaphore) [IsFree](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=2616:2677#L110)
+### <a name="Semaphore.IsFree">func</a> (\*Semaphore) [IsFree](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=2109:2170#L78)
 ``` go
 func (s *Semaphore) IsFree(freeFor time.Duration) <-chan bool
 ```
@@ -248,7 +247,7 @@ a lock over the Duration, ala a WaitGroup.Wait().
 
 
 
-### <a name="Semaphore.Lock">func</a> (\*Semaphore) [Lock](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1826:1852#L80)
+### <a name="Semaphore.Lock">func</a> (\*Semaphore) [Lock](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1319:1345#L48)
 ``` go
 func (s *Semaphore) Lock()
 ```
@@ -257,7 +256,7 @@ Lock consumes a lock in the semaphore, blocking if none is available
 
 
 
-### <a name="Semaphore.String">func</a> (\*Semaphore) [String](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=2974:3009#L128)
+### <a name="Semaphore.String">func</a> (\*Semaphore) [String](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=2612:2647#L101)
 ``` go
 func (s *Semaphore) String() string
 ```
@@ -266,7 +265,7 @@ String returns the string representation of the semaphore
 
 
 
-### <a name="Semaphore.Sub">func</a> (\*Semaphore) [Sub](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=2254:2291#L97)
+### <a name="Semaphore.Sub">func</a> (\*Semaphore) [Sub](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1747:1784#L65)
 ``` go
 func (s *Semaphore) Sub(numLocks int)
 ```
@@ -275,7 +274,7 @@ Sub replaces numLocks locks in the semaphore, blocking if no locks are consumed
 
 
 
-### <a name="Semaphore.Unlock">func</a> (\*Semaphore) [Unlock](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1952:1980#L85)
+### <a name="Semaphore.Unlock">func</a> (\*Semaphore) [Unlock](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1445:1473#L53)
 ``` go
 func (s *Semaphore) Unlock()
 ```
@@ -284,11 +283,13 @@ Unlock replaces a lock in the semaphore, blocking if no locks are consumed
 
 
 
-### <a name="Semaphore.Until">func</a> (\*Semaphore) [Until](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=1615:1654#L70)
+### <a name="Semaphore.Until">func</a> (\*Semaphore) [Until](https://github.com/cognusion/semaphore/tree/master/semaphore.go?s=854:893#L29)
 ``` go
 func (s *Semaphore) Until() <-chan bool
 ```
 Until returns a channel that fires bool(true) when the lock can be consumed.
+If nothing is listening to the returned channel, after 2ms (UntilFreeTimeout)
+the lock will be removed, so if you're not paying attention, don't use this function.
 
 
 
