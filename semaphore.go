@@ -108,16 +108,21 @@ func (s *Semaphore) Free() int {
 // IsFree takes a Duration, and makes a decent try on determining if someone consumed
 // a lock over the Duration, ala a WaitGroup.Wait().
 func (s *Semaphore) IsFree(freeFor time.Duration) <-chan bool {
+	// Logic is that if we get two consencutive "empty" channels freeFor/2 apart,
+	// we consider it done.
 	b := make(chan bool, 1)
 	go func(b chan bool) {
+		halfTime := freeFor / 2
+		c := 0
 		for {
-			<-time.After(1 * time.Millisecond)
-			if len(s.lock) == 0 {
-				<-time.After(freeFor)
-				if len(s.lock) == 0 {
-					b <- true
-					return
-				}
+			<-time.After(halfTime)
+			if len(s.lock) == 0 && c > 0 {
+				b <- true
+				return
+			} else if len(s.lock) == 0 {
+				c++
+			} else if c > 0 {
+				c--
 			}
 		}
 	}(b)
