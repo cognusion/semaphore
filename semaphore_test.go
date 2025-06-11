@@ -301,7 +301,8 @@ func TestSemaphore_Free(t *testing.T) {
 		t.Errorf("Free should be 0, but is %d!\n", S.Free())
 	}
 
-	time.Sleep(200 * time.Millisecond)
+	<-S.IsFree(10 * time.Millisecond)
+
 	if S.Free() != 10 {
 		t.Errorf("Ending free should be 10, but is %d!\n", S.Free())
 	}

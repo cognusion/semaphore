@@ -49,7 +49,10 @@ Package semaphore is a super simple goro-safe semaphore struct for Go.
 */
 package semaphore
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // Semaphore is a goro-safe simple semaphore
 type Semaphore struct {
@@ -100,6 +103,25 @@ func (s *Semaphore) Sub(numLocks int) {
 // Free returns the number of available locks in the semaphore
 func (s *Semaphore) Free() int {
 	return cap(s.lock) - len(s.lock)
+}
+
+// IsFree takes a Duration, and makes a decent try on determining if someone consumed
+// a lock over the Duration, ala a WaitGroup.Wait().
+func (s *Semaphore) IsFree(freeFor time.Duration) <-chan bool {
+	b := make(chan bool, 1)
+	go func(b chan bool) {
+		for {
+			<-time.After(1 * time.Millisecond)
+			if len(s.lock) == 0 {
+				<-time.After(freeFor)
+				if len(s.lock) == 0 {
+					b <- true
+					return
+				}
+			}
+		}
+	}(b)
+	return b
 }
 
 // String returns the string representation of the semaphore
