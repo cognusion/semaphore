@@ -9,7 +9,7 @@ import (
 // UntilFreeTimeout is a Duration for the goro spawned by the Until func to wait
 // if there is nothing consuming messages from provided chan, before releasing
 // the lock.
-const UntilFreeTimeout = 2 * time.Millisecond
+var UntilFreeTimeout = 2 * time.Millisecond
 
 // Semaphore is a goro-safe simple semaphore
 type Semaphore struct {
