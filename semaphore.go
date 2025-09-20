@@ -75,6 +75,9 @@ func (s *Semaphore) Free() int {
 
 // IsFree takes a Duration, and makes a decent try on determining if someone consumed
 // a lock over the Duration, ala a WaitGroup.Wait().
+//
+// Deprecated: This was never a good idea, as it seems too official.
+// Use Free() in a loop over time if you must.
 func (s *Semaphore) IsFree(freeFor time.Duration) <-chan bool {
 	// Logic is that if we get two consencutive "empty" channels freeFor/2 apart,
 	// we consider it done.
